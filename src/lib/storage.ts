@@ -3,6 +3,8 @@ import { sha3_256 } from './util'
 import { WithdrawalTx } from './types'
 import { AccAddress } from 'initia-l1'
 
+const SPLITTER = Buffer.from('|', 'utf8')
+
 function convertHexToBase64(hex: string): string {
   return Buffer.from(hex, 'hex').toString('base64')
 }
@@ -22,14 +24,19 @@ export class WithdrawStorage {
       amount_buf.writeBigInt64BE(tx.amount)
 
       return sha3_256(
-        Buffer.concat([
-          bridge_id_buf,
-          sequence_buf,
-          AccAddress.toBuffer(tx.sender),
-          AccAddress.toBuffer(tx.receiver),
-          Buffer.from(tx.l1_denom, 'utf8'),
-          amount_buf
-        ])
+        sha3_256(
+          Buffer.concat([
+            bridge_id_buf,
+            sequence_buf,
+            AccAddress.toBuffer(tx.sender),
+            SPLITTER,
+            AccAddress.toBuffer(tx.receiver),
+            SPLITTER,
+            Buffer.from(tx.l1_denom, 'utf8'),
+            SPLITTER,
+            amount_buf
+          ])
+        )
       )
     })
 
@@ -53,14 +60,19 @@ export class WithdrawStorage {
     return this.tree
       .getHexProof(
         sha3_256(
-          Buffer.concat([
-            bridge_id_buf,
-            sequence_buf,
-            AccAddress.toBuffer(tx.sender),
-            AccAddress.toBuffer(tx.receiver),
-            Buffer.from(tx.l1_denom, 'utf8'),
-            amount_buf
-          ])
+          sha3_256(
+            Buffer.concat([
+              bridge_id_buf,
+              sequence_buf,
+              AccAddress.toBuffer(tx.sender),
+              SPLITTER,
+              AccAddress.toBuffer(tx.receiver),
+              SPLITTER,
+              Buffer.from(tx.l1_denom, 'utf8'),
+              SPLITTER,
+              amount_buf
+            ])
+          )
         )
       )
       .map((v) => convertHexToBase64(v.replace('0x', '')))
@@ -87,14 +99,19 @@ export class WithdrawStorage {
     amount_buf.writeBigInt64BE(tx.amount)
 
     let hashBuf = sha3_256(
-      Buffer.concat([
-        bridge_id_buf,
-        sequence_buf,
-        AccAddress.toBuffer(tx.sender),
-        AccAddress.toBuffer(tx.receiver),
-        Buffer.from(tx.l1_denom, 'utf8'),
-        amount_buf
-      ])
+      sha3_256(
+        Buffer.concat([
+          bridge_id_buf,
+          sequence_buf,
+          AccAddress.toBuffer(tx.sender),
+          SPLITTER,
+          AccAddress.toBuffer(tx.receiver),
+          SPLITTER,
+          Buffer.from(tx.l1_denom, 'utf8'),
+          SPLITTER,
+          amount_buf
+        ])
+      )
     )
 
     proof.forEach((proofElem) => {
